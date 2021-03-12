@@ -16,11 +16,11 @@ namespace GuidHelperTelegramBot.AzureFunction
     public static class TelegramFunction
     {
         private static readonly Regex Base64Regex = new Regex(
-            "[a-z0-9]{16,}==",
+            @"[a-z0-9+\/]{16,}==",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly Regex Base64ShortRegex = new Regex(
-            "[a-z0-9]{16,}",
+            @"[a-z0-9+\/]{16,}",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         [FunctionName("Telegram")]
