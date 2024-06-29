@@ -67,8 +67,9 @@ namespace GuidHelperTelegramBot.AzureFunction
 
                 await client.SendTextMessageAsync(
                     update.Message.Chat.Id,
-                    guid.ToString(),
-                    replyToMessageId: update.Message.MessageId);
+                    $"`{guid}`",
+                    replyToMessageId: update.Message.MessageId,
+                    parseMode: ParseMode.MarkdownV2);
                 return;
             }
 
@@ -77,42 +78,47 @@ namespace GuidHelperTelegramBot.AzureFunction
                 var bytes = parsedGuid.ToByteArray();
                 var resultBase64 = Convert.ToBase64String(bytes);
 
-                await client.SendTextMessageAsync(
-                    update.Message.Chat.Id,
-                    resultBase64,
-                    replyToMessageId: update.Message.MessageId);
-
-                await client.SendTextMessageAsync(
-                    update.Message.Chat.Id,
-                    $"BinData(3, '{resultBase64}')",
-                    replyToMessageId: update.Message.MessageId);
-
-                await client.SendTextMessageAsync(
-                    update.Message.Chat.Id,
-                    $"{{ _id: BinData(3, '{resultBase64}') }}",
-                    replyToMessageId: update.Message.MessageId);
-
                 if (update.Message.Text.Trim().ToLowerInvariant().EndsWith("-ae86-4653-9db8-f6bdacd094e5"))
                 {
                     var resultInt = IdConverter.ConvertToInt(parsedGuid);
-                    
+
                     await client.SendTextMessageAsync(
                         update.Message.Chat.Id,
-                        resultInt.ToString(),
-                        replyToMessageId: update.Message.MessageId);
+$@"`{resultBase64}`
+
+`BinData(3, '{resultBase64}')`
+
+`{{ _id: BinData(3, '{resultBase64}') }}`
+
+`{resultInt}`",
+                        replyToMessageId: update.Message.MessageId,
+                        parseMode: ParseMode.MarkdownV2);
+                }
+                else
+                {
+                    await client.SendTextMessageAsync(
+                        update.Message.Chat.Id,
+$@"`{resultBase64}`
+
+`BinData(3, '{resultBase64}')`
+
+`{{ _id: BinData(3, '{resultBase64}') }}`",
+                        replyToMessageId: update.Message.MessageId,
+                        parseMode: ParseMode.MarkdownV2);
                 }
 
                 return;
             }
 
-            if (Int32.TryParse(update.Message.Text, out var parsedInt))
+            if (int.TryParse(update.Message.Text, out var parsedInt))
             {
                 var resultGuid = IdConverter.ConvertToGuid(parsedInt);
 
                 await client.SendTextMessageAsync(
                     update.Message.Chat.Id,
-                    resultGuid.ToString(),
-                    replyToMessageId: update.Message.MessageId);
+                    $"`{resultGuid}`",
+                    replyToMessageId: update.Message.MessageId,
+                    parseMode: ParseMode.MarkdownV2);
                 return;
             }
         }
