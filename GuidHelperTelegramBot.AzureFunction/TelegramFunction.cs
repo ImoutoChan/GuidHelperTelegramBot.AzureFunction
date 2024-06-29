@@ -81,6 +81,38 @@ namespace GuidHelperTelegramBot.AzureFunction
                     update.Message.Chat.Id,
                     resultBase64,
                     replyToMessageId: update.Message.MessageId);
+
+                await client.SendTextMessageAsync(
+                    update.Message.Chat.Id,
+                    $"BinData(3, '{resultBase64}')",
+                    replyToMessageId: update.Message.MessageId);
+
+                await client.SendTextMessageAsync(
+                    update.Message.Chat.Id,
+                    $"{{ _id: BinData(3, '{resultBase64}') }}",
+                    replyToMessageId: update.Message.MessageId);
+
+                if (update.Message.Text.Trim().ToLowerInvariant().EndsWith("-ae86-4653-9db8-f6bdacd094e5"))
+                {
+                    var resultInt = IdConverter.ConvertToInt(parsedGuid);
+                    
+                    await client.SendTextMessageAsync(
+                        update.Message.Chat.Id,
+                        resultInt.ToString(),
+                        replyToMessageId: update.Message.MessageId);
+                }
+
+                return;
+            }
+
+            if (Int32.TryParse(update.Message.Text, out var parsedInt))
+            {
+                var resultGuid = IdConverter.ConvertToGuid(parsedInt);
+
+                await client.SendTextMessageAsync(
+                    update.Message.Chat.Id,
+                    resultGuid.ToString(),
+                    replyToMessageId: update.Message.MessageId);
                 return;
             }
         }
@@ -112,6 +144,39 @@ namespace GuidHelperTelegramBot.AzureFunction
                 throw new Exception("Unable to read telegram bot token");
 
             return new TelegramBotClient(token);
+        }
+    }
+
+    public static class IdConverter
+    {
+        private static readonly byte[] BaseGuid =
+            Guid.Parse("00000000-ae86-4653-9db8-f6bdacd094e5")
+                .ToByteArray();
+
+        public static Guid? ConvertToGuid(int? obsoleteId)
+        {
+            if (!obsoleteId.HasValue)
+            {
+                return null;
+            }
+
+            return ConvertToGuid(obsoleteId.Value);
+        }
+
+        public static Guid ConvertToGuid(int obsoleteId)
+        {
+            Span<byte> resultArray = stackalloc byte[16];
+
+            BaseGuid.CopyTo(resultArray);
+            BitConverter.GetBytes(obsoleteId).CopyTo(resultArray);
+
+            return new Guid(resultArray.ToArray());
+        }
+
+        public static int ConvertToInt(Guid id)
+        {
+            var bytes = id.ToByteArray().AsSpan();
+            return BitConverter.ToInt32(bytes.Slice(0, 4).ToArray(), 0);
         }
     }
 }
